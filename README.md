@@ -23,17 +23,28 @@ $ recall search "sqlite vec hybrid"
 (`project:` `since:` `role:` `tool:`). Hybrid + reranker eval numbers below.
 See [PLAN.md](PLAN.md).
 
-## Install (dev)
+## Install
 
 ```bash
-git clone https://github.com/<you>/claude-recall
+# via uv (recommended)
+uv tool install claude-recall
+
+# or pipx
+pipx install claude-recall
+
+# first run
+recall index
+recall search "your query"
+```
+
+Dev install:
+
+```bash
+git clone https://github.com/lbbstarry/claude-recall
 cd claude-recall
 uv sync
 uv run recall index
-uv run recall search "your query"
 ```
-
-PyPI release will follow v0.2 (end of Week 4).
 
 ## Commands
 
