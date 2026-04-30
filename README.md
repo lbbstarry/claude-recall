@@ -18,8 +18,9 @@ $ recall search "sqlite vec hybrid"
 
 ## Status
 
-**Week 1 / 6** — BM25 search shipping. Hybrid (BM25 + bge-m3 vector) lands in
-Week 2 with a published Recall@10 / nDCG eval. See [PLAN.md](PLAN.md).
+**Week 2 / 6** — Hybrid retrieval (BM25 + bge-small-zh + RRF) and a
+cross-encoder reranker are live. Eval numbers below are reproducible from a
+51-query labeled set in `tests/fixtures/queries.jsonl`. See [PLAN.md](PLAN.md).
 
 ## Install (dev)
 
@@ -37,12 +38,13 @@ PyPI release will follow v0.2 (end of Week 4).
 
 | Command | What it does |
 |---|---|
-| `recall index` | Scan `~/.claude/projects/` and index new/changed sessions (incremental via mtime + sha256). |
-| `recall search <q>` | BM25 search. `--limit N`, `--project NAME`. |
-| `recall stats` | Index size and DB path. |
+| `recall index` | Scan `~/.claude/projects/` and index + embed new/changed sessions (incremental via mtime + sha256). `--no-embed` for BM25-only. |
+| `recall search <q>` | Hybrid BM25 + vector search by default. `--mode bm25\|vector\|hybrid`, `--limit N`, `--project NAME`. |
+| `recall stats` | Index size, vector count, DB path. |
+| `python -m claude_recall.eval.run` | Run the labeled eval set, print Recall@10 / MRR / nDCG@10, write `benchmarks/eval_results.md`. |
 
-Coming in Week 2+:
-- `--rerank` — bge-reranker-v2-m3 cross-encoder
+Coming in Week 3+:
+- CLI `--rerank` flag (cross-encoder is already wired into the eval harness)
 - `recall show <session>` — render a full session
 - `recall inject <chunk>` — copy a turn to the clipboard for paste-into-Claude
 - `recall serve` — local FastAPI + HTMX UI
@@ -59,10 +61,13 @@ parsers/claude_code.py    typed Message records
 ingest/chunker.py         per-turn chunks (one user msg + following assistant)
     │
     ▼
-store/                    SQLite + FTS5 (vec0 added in Week 2)
+embed/local.py            sentence-transformers (bge-small-zh) + disk cache
     │
     ▼
-search/bm25.py            FTS5 MATCH + bm25() ranking
+store/                    SQLite + FTS5 + sqlite-vec (vec0 virtual table)
+    │
+    ▼
+search/                   bm25 · vector (KNN) · hybrid (RRF) · rerank (cross-encoder)
     │
     ▼
 cli.py                    Typer app
@@ -75,23 +80,36 @@ context, no truncation needed.
 Why SQLite + FTS5 + (later) sqlite-vec? Single file, zero ops, ships with the
 wheel, hybrid search is a JOIN away. Beats Chroma at this scale.
 
-## Eval (placeholder — landing Week 2)
+## Eval
 
-| Method | Recall@10 | nDCG@10 | p95 latency |
-|---|---|---|---|
-| BM25 only | TODO | TODO | TODO |
-| Vector (bge-m3) | TODO | TODO | TODO |
-| Hybrid (RRF) | TODO | TODO | TODO |
-| Hybrid + rerank | TODO | TODO | TODO |
+51 hand-labeled `(query, relevant_chunk_id)` pairs from real developer
+sessions in `tests/fixtures/queries.jsonl`. Index size: 6,593 chunks across
+127 sessions / 6 projects. Reproduce with `python -m claude_recall.eval.run`.
 
-Eval queries: 50 hand-labeled `(query, relevant_chunk_id)` pairs from real
-developer sessions. Set lives in `tests/fixtures/queries.jsonl` once it lands.
+| Method | Recall@10 | MRR | nDCG@10 | p95 ms |
+|---|---:|---:|---:|---:|
+| BM25 (FTS5) | 0.216 | 0.125 | 0.148 | 2 |
+| Vector (`bge-small-zh-v1.5`, 512d) | 0.353 | 0.175 | 0.217 | 13 |
+| **Hybrid (RRF)** | **0.392** | 0.175 | 0.228 | 16 |
+| **Hybrid + rerank (`bge-reranker-base`)** | **0.471** | **0.230** | **0.289** | 214 |
+
+Hybrid + rerank gives **+118% Recall@10** and **+95% nDCG@10** over BM25.
+Reranker latency is dominated by CPU cross-encoder inference; GPU or
+`bge-reranker-v2-m3-onnx` will reduce it. Numbers are CPU-only on a WSL2
+Ryzen laptop.
+
+Why the absolute numbers look modest: the eval queries are deliberately
+**short** (median 5 chars) and developer-domain-specific, e.g. `prefab`,
+`figma示例`. That is the realistic distribution for "I vaguely remember
+talking about this last month" — and the gap between methods, not the
+absolute floor, is what matters. Query expansion and bge-m3 (8k context,
+multilingual) are next.
 
 ## Roadmap
 
 - [x] **Week 1** — Typer CLI, SQLite + FTS5, incremental ingest, BM25 search
-- [ ] **Week 2** — bge-m3 embeddings, sqlite-vec, RRF hybrid, 50-query eval
-- [ ] **Week 3** — `recall show`/`inject`/`export`, `--watch` daemon, filters
+- [x] **Week 2** — bge-small-zh embeddings, sqlite-vec, RRF hybrid, reranker, 51-query eval
+- [ ] **Week 3** — `recall show`/`inject`/`export`, `--watch` daemon, filters, `--rerank` CLI flag
 - [ ] **Week 4** — v0.2 on PyPI, Show HN, eval blog post
 - [ ] **Week 5** — `recall serve` (FastAPI + HTMX local UI)
 - [ ] **Week 6** — v1.0, Pro tier (cloud sync, Voyage embedder), Product Hunt

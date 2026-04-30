@@ -78,6 +78,50 @@ def insert_chunks(conn: sqlite3.Connection, chunks: Iterable[Chunk]) -> int:
     return len(rows)
 
 
+def upsert_embeddings(
+    conn: sqlite3.Connection,
+    chunk_ids: list[str],
+    vectors_bytes: list[bytes],
+) -> None:
+    """Upsert embeddings into chunks_vec virtual table keyed by chunks.rowid."""
+    if not chunk_ids:
+        return
+    placeholders = ",".join("?" * len(chunk_ids))
+    rowmap = dict(
+        conn.execute(
+            f"SELECT id, rowid FROM chunks WHERE id IN ({placeholders})",
+            chunk_ids,
+        ).fetchall()
+    )
+    rows = []
+    for cid, vec in zip(chunk_ids, vectors_bytes, strict=True):
+        rid = rowmap.get(cid)
+        if rid is None:
+            continue
+        rows.append((rid, vec))
+    if not rows:
+        return
+    # vec0 supports REPLACE via DELETE + INSERT
+    rids = [r[0] for r in rows]
+    rid_placeholders = ",".join("?" * len(rids))
+    conn.execute(f"DELETE FROM chunks_vec WHERE rowid IN ({rid_placeholders})", rids)
+    conn.executemany(
+        "INSERT INTO chunks_vec(rowid, embedding) VALUES (?, ?)",
+        rows,
+    )
+
+
+def delete_session_vectors(conn: sqlite3.Connection, session_id: str) -> None:
+    rows = conn.execute(
+        "SELECT rowid FROM chunks WHERE session_id = ?", (session_id,)
+    ).fetchall()
+    if not rows:
+        return
+    rids = [r["rowid"] for r in rows]
+    placeholders = ",".join("?" * len(rids))
+    conn.execute(f"DELETE FROM chunks_vec WHERE rowid IN ({placeholders})", rids)
+
+
 def stats(conn: sqlite3.Connection) -> dict[str, int]:
     n_files = conn.execute("SELECT COUNT(*) AS c FROM files").fetchone()["c"]
     n_chunks = conn.execute("SELECT COUNT(*) AS c FROM chunks").fetchone()["c"]
