@@ -55,7 +55,9 @@ def _print_hits(hits: list[SearchHit]) -> None:
 
 
 @app.command()
-def index(no_embed: bool = typer.Option(False, "--no-embed", help="BM25 only, skip embeddings")) -> None:
+def index(
+    no_embed: bool = typer.Option(False, "--no-embed", help="BM25 only, skip embeddings"),
+) -> None:
     """Scan ~/.claude/projects/ and index new/changed sessions."""
     cfg, conn, embedder = _open(with_vec=not no_embed)
     cache = EmbedCache(cfg.data_dir / "embed_cache.db") if embedder else None
@@ -145,9 +147,9 @@ def inject(
             f"{c.session_id[:12]}  ({len(c.text)} chars)"
         )
     except Exception:
-        # Fallback: print to stdout so user can pipe it
         console.print(
-            "[yellow]clipboard unavailable; printing to stdout (use `recall inject … | pbcopy` etc.)[/yellow]"
+            "[yellow]clipboard unavailable; printing to stdout "
+            "(use `recall inject … | pbcopy` etc.)[/yellow]"
         )
         sys.stdout.write(c.text)
 

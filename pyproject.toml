@@ -56,6 +56,8 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "B", "SIM", "RET"]
+# B008 false-positive on Typer's idiomatic Option/Argument defaults.
+ignore = ["B008"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

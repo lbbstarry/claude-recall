@@ -18,9 +18,7 @@ def _matches(row: sqlite3.Row, f: Filters | None) -> bool:
         return False
     if f.role and f.role not in row["role_mix"]:
         return False
-    if f.tool and f.tool not in (row["tool_names"] or ""):
-        return False
-    return True
+    return not (f.tool and f.tool not in (row["tool_names"] or ""))
 
 
 def search(

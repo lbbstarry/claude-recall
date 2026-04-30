@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 KNOWN = {"project", "since", "role", "tool"}
 _TOKEN = re.compile(r'(\w+):("(?:[^"\\]|\\.)*"|\S+)')
@@ -27,9 +27,9 @@ def _parse_since(raw: str) -> str | None:
     if m:
         n, unit = int(m.group(1)), m.group(2)
         delta = {"d": timedelta(days=n), "h": timedelta(hours=n), "m": timedelta(minutes=n)}[unit]
-        return (datetime.now(timezone.utc) - delta).isoformat()
+        return (datetime.now(UTC) - delta).isoformat()
     try:
-        return datetime.fromisoformat(raw).astimezone(timezone.utc).isoformat()
+        return datetime.fromisoformat(raw).astimezone(UTC).isoformat()
     except ValueError:
         return None
 

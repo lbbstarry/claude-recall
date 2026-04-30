@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sqlite3
 from collections.abc import Iterable
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from claude_recall.ingest.chunker import Chunk
 
@@ -27,7 +27,7 @@ def upsert_file(
             sha256=excluded.sha256,
             indexed_at=excluded.indexed_at
         """,
-        (path, project, session_id, mtime, sha256, datetime.now(timezone.utc).isoformat()),
+        (path, project, session_id, mtime, sha256, datetime.now(UTC).isoformat()),
     )
 
 

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from claude_recall.search.filters import parse
 
@@ -16,7 +16,7 @@ def test_parse_known_filters():
     assert f.role == "assistant"
     assert f.tool == "Bash"
     parsed = datetime.fromisoformat(f.since_iso)
-    assert (datetime.now(timezone.utc) - parsed).days <= 7
+    assert (datetime.now(UTC) - parsed).days <= 7
 
 
 def test_parse_unknown_passes_through():
