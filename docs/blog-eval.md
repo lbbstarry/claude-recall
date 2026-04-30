@@ -1,6 +1,6 @@
 # What I learned indexing 6,500 turns of Claude Code conversation
 
-*April 2026 · `claude-recall` v0.2*
+*April 2026 · `claudegrep` v0.2*
 
 I spent three weeks building a search index over my own Claude Code history.
 What I didn't expect: the **eval set** turned out to be the most valuable
@@ -119,7 +119,7 @@ distribution it's the working floor.
 
 ## Repo
 
-Apache-2.0, on GitHub: <https://github.com/lbbstarry/claude-recall>.
+Apache-2.0, on GitHub: <https://github.com/lbbstarry/claudegrep>. Install: `uv tool install claudegrep`.
 The eval set is `tests/fixtures/queries.jsonl`; the harness is
 `src/claude_recall/eval/run.py`; the numbers above are committed to
 `benchmarks/eval_results.md` and re-run on every release.

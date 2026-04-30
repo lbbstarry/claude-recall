@@ -1,13 +1,13 @@
-# Show HN draft — claude-recall v0.2
+# Show HN draft — claudegrep v0.2
 
 ## Title (≤80 chars)
-Show HN: claude-recall – semantic search over your Claude Code conversation history
+Show HN: claudegrep – grep, but semantic, for your Claude Code history
 
 ## Body
 
 Every Claude Code session vanishes when you close the terminal. The JSONL files in `~/.claude/projects/` are right there, but `grep` is the only way to find anything in them. I wanted to type a vague half-remembered phrase and find the turn from three weeks ago where I figured out the right approach.
 
-`claude-recall` indexes those JSONL files into one SQLite database (FTS5 + sqlite-vec, no separate vector store) and gives you a CLI:
+`claudegrep` indexes those JSONL files into one SQLite database (FTS5 + sqlite-vec, no separate vector store) and gives you a CLI:
 
 ```
 $ recall index
@@ -35,11 +35,12 @@ Local-first by design: no network calls in the OSS build. Runs on a CPU laptop. 
 Install:
 
 ```
-uv tool install claude-recall    # or pipx install claude-recall
+uv tool install claudegrep    # or pipx install claudegrep
 recall index
 ```
 
-Repo: https://github.com/lbbstarry/claude-recall
+Repo: https://github.com/lbbstarry/claudegrep
+PyPI: https://pypi.org/project/claudegrep/
 Eval methodology + ablation: see README and `benchmarks/eval_results.md`.
 
 Curious what other Claude Code users actually search for — if you try it and the queries you wished worked didn't, I'd love to hear about them.

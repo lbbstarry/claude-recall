@@ -1,10 +1,11 @@
-# claude-recall
+# claudegrep
 
-> Semantic search across your Claude Code conversation history. Local-first, private, fast.
+> `grep`, but semantic, for your Claude Code conversation history. Local-first, private, fast.
 
-Every Claude Code session vanishes the moment you close it. `recall` indexes
+Every Claude Code session vanishes the moment you close it. `claudegrep` indexes
 your `~/.claude/projects/` JSONL files into a single SQLite database and
-gives you a fast CLI to find any past turn — by keyword now, by meaning soon.
+gives you a fast CLI (`recall`) to find any past turn — hybrid BM25 + vector
+search with optional cross-encoder reranking.
 
 ```text
 $ recall search "sqlite vec hybrid"
@@ -27,10 +28,10 @@ See [PLAN.md](PLAN.md).
 
 ```bash
 # via uv (recommended)
-uv tool install claude-recall
+uv tool install claudegrep
 
 # or pipx
-pipx install claude-recall
+pipx install claudegrep
 
 # first run
 recall index
@@ -40,8 +41,8 @@ recall search "your query"
 Dev install:
 
 ```bash
-git clone https://github.com/lbbstarry/claude-recall
-cd claude-recall
+git clone https://github.com/lbbstarry/claudegrep
+cd claudegrep
 uv sync
 uv run recall index
 ```

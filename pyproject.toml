@@ -1,7 +1,7 @@
 [project]
-name = "claude-recall"
+name = "claudegrep"
 version = "0.2.0"
-description = "Semantic search across your Claude Code conversation history. Local-first, hybrid BM25+vector retrieval."
+description = "grep, but semantic, for your Claude Code conversation history. Local-first, hybrid BM25+vector retrieval."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "Apache-2.0" }
@@ -31,9 +31,9 @@ dependencies = [
 recall = "claude_recall.cli:app"
 
 [project.urls]
-Homepage = "https://github.com/lbbstarry/claude-recall"
-Repository = "https://github.com/lbbstarry/claude-recall"
-Issues = "https://github.com/lbbstarry/claude-recall/issues"
+Homepage = "https://github.com/lbbstarry/claudegrep"
+Repository = "https://github.com/lbbstarry/claudegrep"
+Issues = "https://github.com/lbbstarry/claudegrep/issues"
 
 [build-system]
 requires = ["hatchling"]
