@@ -204,6 +204,26 @@ def watch() -> None:
 
 
 @app.command()
+def serve(
+    host: str = typer.Option("127.0.0.1", "--host", help="Bind host (use 0.0.0.0 to expose)"),
+    port: int = typer.Option(7777, "--port", "-p"),
+) -> None:
+    """Run the local web UI at http://127.0.0.1:7777."""
+    try:
+        from claude_recall.ui.server import serve as _serve
+    except ImportError as e:
+        console.print(
+            "[red]serve requires the optional [serve] extras[/red]\n"
+            "  install: [bold]uv tool install 'claudegrep[serve]'[/bold]\n"
+            "  or:      [bold]pipx install 'claudegrep[serve]'[/bold]\n"
+            f"  ({e})"
+        )
+        raise typer.Exit(1) from None
+    console.print(f"[bold]claudegrep[/bold] serving at [cyan]http://{host}:{port}[/cyan]")
+    _serve(host=host, port=port)
+
+
+@app.command()
 def stats() -> None:
     """Show index statistics."""
     cfg, conn, _ = _open(with_vec=False)

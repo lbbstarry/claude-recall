@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+    <h1 class="hero-h">Find any Claude Code turn<br><em>by what it meant</em>.</h1>
+    <p class="hero-sub">
+        Hybrid BM25 + vector search across <code>~/.claude/projects/</code>.
+        Inline filters: <code>project:foo</code> <code>since:7d</code> <code>role:user</code> <code>tool:Bash</code>.
+    </p>
+</section>
+
+<form class="search" hx-post="/search" hx-target="#hits" hx-indicator="#spin">
+    <div class="row">
+        <input type="text" name="q" id="q" placeholder='try: rrf fusion since:14d project:claude-recall'
+               autocomplete="off" autofocus>
+        <button type="submit">Search</button>
+    </div>
+    <div class="opts">
+        <label><span>mode</span>
+            <select name="mode">
+                <option value="hybrid" selected>hybrid (RRF)</option>
+                <option value="vector">vector only</option>
+                <option value="bm25">bm25 only</option>
+            </select>
+        </label>
+        <label><span>limit</span>
+            <input type="number" name="limit" value="10" min="1" max="50">
+        </label>
+        <label class="rerank">
+            <input type="checkbox" name="rerank">
+            <span>cross-encoder rerank</span>
+        </label>
+        <span id="spin" class="spin">▦ searching…</span>
+    </div>
+</form>
+
+<div id="hits"></div>
+{% endblock %}

@@ -1,6 +1,6 @@
 [project]
 name = "claudegrep"
-version = "0.2.0"
+version = "0.3.0"
 description = "grep, but semantic, for your Claude Code conversation history. Local-first, hybrid BM25+vector retrieval."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -27,6 +27,14 @@ dependencies = [
     "watchdog>=6.0.0",
 ]
 
+[project.optional-dependencies]
+serve = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "jinja2>=3.1",
+    "python-multipart>=0.0.12",
+]
+
 [project.scripts]
 recall = "claude_recall.cli:app"
 
@@ -41,6 +49,10 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/claude_recall"]
+artifacts = [
+    "src/claude_recall/ui/templates/*.html",
+    "src/claude_recall/ui/static/*.css",
+]
 
 [dependency-groups]
 dev = [

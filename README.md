@@ -19,23 +19,26 @@ $ recall search "sqlite vec hybrid"
 
 ## Status
 
-**Week 3 / 6** — Daily-driver UX is live: `show`, `inject`, `export`, the
-`watch` daemon, a `--rerank` flag, and an inline filter DSL
-(`project:` `since:` `role:` `tool:`). Hybrid + reranker eval numbers below.
+**Week 5 / 6** — `recall serve` is live: a local FastAPI + HTMX web UI at
+`http://127.0.0.1:7777` with hybrid search, inline filters, session viewer,
+and one-click "copy turn" to clipboard. v0.3.0 ships it.
 See [PLAN.md](PLAN.md).
 
 ## Install
 
 ```bash
-# via uv (recommended)
+# CLI only (~120 MB with embedder model)
 uv tool install claudegrep
-
-# or pipx
+# or:
 pipx install claudegrep
+
+# CLI + local web UI
+uv tool install 'claudegrep[serve]'
 
 # first run
 recall index
 recall search "your query"
+recall serve              # opens http://127.0.0.1:7777
 ```
 
 Dev install:
@@ -57,13 +60,14 @@ uv run recall index
 | `recall inject <chunk>` | Copy a chunk's text to your clipboard so you can paste it into a new Claude session. |
 | `recall export <session> -o file.md` | Export a session to disk as Markdown. |
 | `recall watch` | Re-index in the background as JSONL files change (debounced; uses polling on WSL2). |
+| `recall serve` | Local web UI on `127.0.0.1:7777` (FastAPI + HTMX). Requires `[serve]` extras. |
 | `recall stats` | Index size, vector count, DB path. |
 | `python -m claude_recall.eval.run` | Run the labeled eval set, print Recall@10 / MRR / nDCG@10, write `benchmarks/eval_results.md`. |
 
-Coming in Week 4+:
-- v0.2 on PyPI + Show HN
-- `recall serve` — local FastAPI + HTMX UI
-- bge-m3 + query expansion + ablation blog post
+Coming in Week 6+:
+- bge-m3 + query expansion (planned biggest single eval bump)
+- Pro tier: encrypted cross-machine sync, voyage-3-lite embedder
+- v1.0 + Product Hunt launch
 
 ## Architecture
 
@@ -126,8 +130,8 @@ multilingual) are next.
 - [x] **Week 1** — Typer CLI, SQLite + FTS5, incremental ingest, BM25 search
 - [x] **Week 2** — bge-small-zh embeddings, sqlite-vec, RRF hybrid, reranker, 51-query eval
 - [x] **Week 3** — `show`/`inject`/`export`, `watch` daemon, filter DSL, `--rerank` flag
-- [ ] **Week 4** — v0.2 on PyPI, Show HN, eval blog post
-- [ ] **Week 5** — `recall serve` (FastAPI + HTMX local UI)
+- [x] **Week 4** — v0.2 on PyPI, eval blog post drafts (EN + ZH)
+- [x] **Week 5** — `recall serve` (FastAPI + HTMX local UI), v0.3
 - [ ] **Week 6** — v1.0, Pro tier (cloud sync, Voyage embedder), Product Hunt
 
 ## Privacy

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}session {{ session_id[:12] }} · claudegrep{% endblock %}
+
+{% block content %}
+<nav class="crumbs"><a href="/">← back to search</a></nav>
+<header class="session-h">
+    <h1>session <code>{{ session_id[:16] }}</code></h1>
+    <span class="meta">{{ chunks|length }} turn{{ "s" if chunks|length != 1 else "" }}</span>
+</header>
+<ol class="turns">
+{% for c in chunks %}
+<li class="turn" id="turn-{{ c.id }}">
+    <header>
+        <span class="turn-idx">turn {{ c.turn_index }}</span>
+        <time>{{ c.started_at[:19] }}</time>
+        {% if c.tool_names %}
+        <span class="tools">tools: {{ c.tool_names|join(", ") }}</span>
+        {% endif %}
+    </header>
+    <pre class="turn-text">{{ c.text }}</pre>
+</li>
+{% endfor %}
+</ol>
+{% endblock %}

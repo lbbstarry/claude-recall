@@ -1,0 +1,34 @@
+{% if not hits %}
+<p class="no-hits">No hits for <code>{{ query }}</code>. Try fewer filters or a shorter query.</p>
+{% else %}
+<ol class="hits">
+{% for h in hits %}
+<li class="hit">
+    <header>
+        <span class="hit-rank">{{ loop.index }}</span>
+        <time>{{ h.started_at[:19] }}</time>
+        <span class="hit-project">{{ h.project[:40] }}</span>
+        <span class="hit-score">score {{ "%.3f"|format(h.score) }}</span>
+    </header>
+    <p class="hit-snippet">{{ h.text[:320] }}{% if h.text|length > 320 %}…{% endif %}</p>
+    <footer>
+        <a href="/session/{{ h.session_id }}#turn-{{ h.chunk_id }}" class="btn">view session</a>
+        <button type="button" class="btn ghost copy"
+                data-chunk="{{ h.chunk_id }}"
+                onclick="copyChunk('{{ h.chunk_id }}', this)">copy turn</button>
+        <span class="hit-id">chunk {{ h.chunk_id[:12] }} · session {{ h.session_id[:12] }}</span>
+    </footer>
+</li>
+{% endfor %}
+</ol>
+<script>
+async function copyChunk(id, btn) {
+  const r = await fetch('/chunk/' + id + '/text');
+  if (!r.ok) { btn.textContent = 'failed'; return; }
+  await navigator.clipboard.writeText(await r.text());
+  const orig = btn.textContent;
+  btn.textContent = 'copied ✓';
+  setTimeout(() => btn.textContent = orig, 1400);
+}
+</script>
+{% endif %}
