@@ -7,6 +7,7 @@ import sqlite3
 from claude_recall.embed.base import Embedder
 from claude_recall.search import bm25, vector
 from claude_recall.search.bm25 import SearchHit
+from claude_recall.search.filters import Filters
 
 RRF_K = 60
 
@@ -17,11 +18,12 @@ def search(
     query: str,
     *,
     limit: int = 10,
+    filters: Filters | None = None,
     project: str | None = None,
     candidates: int = 50,
 ) -> list[SearchHit]:
-    bm = bm25.search(conn, query, limit=candidates, project=project)
-    vc = vector.search(conn, embedder, query, limit=candidates, project=project)
+    bm = bm25.search(conn, query, limit=candidates, filters=filters, project=project)
+    vc = vector.search(conn, embedder, query, limit=candidates, filters=filters, project=project)
 
     bm_rank = {h.chunk_id: i + 1 for i, h in enumerate(bm)}
     vc_rank = {h.chunk_id: i + 1 for i, h in enumerate(vc)}
@@ -39,17 +41,15 @@ def search(
         fused.append((score, hit))
 
     fused.sort(key=lambda x: x[0], reverse=True)
-    out = []
-    for s, h in fused[:limit]:
-        out.append(
-            SearchHit(
-                chunk_id=h.chunk_id,
-                session_id=h.session_id,
-                project=h.project,
-                started_at=h.started_at,
-                role_mix=h.role_mix,
-                score=s,
-                text=h.text,
-            )
+    return [
+        SearchHit(
+            chunk_id=h.chunk_id,
+            session_id=h.session_id,
+            project=h.project,
+            started_at=h.started_at,
+            role_mix=h.role_mix,
+            score=s,
+            text=h.text,
         )
-    return out
+        for s, h in fused[:limit]
+    ]

@@ -18,9 +18,10 @@ $ recall search "sqlite vec hybrid"
 
 ## Status
 
-**Week 2 / 6** — Hybrid retrieval (BM25 + bge-small-zh + RRF) and a
-cross-encoder reranker are live. Eval numbers below are reproducible from a
-51-query labeled set in `tests/fixtures/queries.jsonl`. See [PLAN.md](PLAN.md).
+**Week 3 / 6** — Daily-driver UX is live: `show`, `inject`, `export`, the
+`watch` daemon, a `--rerank` flag, and an inline filter DSL
+(`project:` `since:` `role:` `tool:`). Hybrid + reranker eval numbers below.
+See [PLAN.md](PLAN.md).
 
 ## Install (dev)
 
@@ -39,15 +40,18 @@ PyPI release will follow v0.2 (end of Week 4).
 | Command | What it does |
 |---|---|
 | `recall index` | Scan `~/.claude/projects/` and index + embed new/changed sessions (incremental via mtime + sha256). `--no-embed` for BM25-only. |
-| `recall search <q>` | Hybrid BM25 + vector search by default. `--mode bm25\|vector\|hybrid`, `--limit N`, `--project NAME`. |
+| `recall search <q>` | Hybrid BM25 + vector search by default. `--mode bm25\|vector\|hybrid`, `--rerank`, `--limit N`, `--project NAME`. Inline filters: `project:foo since:7d role:user tool:Bash`. |
+| `recall show <session>` | Render a session as Markdown. Accepts an 8+ char prefix; use `--turn N` to view one turn. |
+| `recall inject <chunk>` | Copy a chunk's text to your clipboard so you can paste it into a new Claude session. |
+| `recall export <session> -o file.md` | Export a session to disk as Markdown. |
+| `recall watch` | Re-index in the background as JSONL files change (debounced; uses polling on WSL2). |
 | `recall stats` | Index size, vector count, DB path. |
 | `python -m claude_recall.eval.run` | Run the labeled eval set, print Recall@10 / MRR / nDCG@10, write `benchmarks/eval_results.md`. |
 
-Coming in Week 3+:
-- CLI `--rerank` flag (cross-encoder is already wired into the eval harness)
-- `recall show <session>` — render a full session
-- `recall inject <chunk>` — copy a turn to the clipboard for paste-into-Claude
+Coming in Week 4+:
+- v0.2 on PyPI + Show HN
 - `recall serve` — local FastAPI + HTMX UI
+- bge-m3 + query expansion + ablation blog post
 
 ## Architecture
 
@@ -109,7 +113,7 @@ multilingual) are next.
 
 - [x] **Week 1** — Typer CLI, SQLite + FTS5, incremental ingest, BM25 search
 - [x] **Week 2** — bge-small-zh embeddings, sqlite-vec, RRF hybrid, reranker, 51-query eval
-- [ ] **Week 3** — `recall show`/`inject`/`export`, `--watch` daemon, filters, `--rerank` CLI flag
+- [x] **Week 3** — `show`/`inject`/`export`, `watch` daemon, filter DSL, `--rerank` flag
 - [ ] **Week 4** — v0.2 on PyPI, Show HN, eval blog post
 - [ ] **Week 5** — `recall serve` (FastAPI + HTMX local UI)
 - [ ] **Week 6** — v1.0, Pro tier (cloud sync, Voyage embedder), Product Hunt

@@ -6,6 +6,21 @@ import sqlite3
 
 from claude_recall.embed.base import Embedder
 from claude_recall.search.bm25 import SearchHit
+from claude_recall.search.filters import Filters
+
+
+def _matches(row: sqlite3.Row, f: Filters | None) -> bool:
+    if f is None:
+        return True
+    if f.project and row["project"] != f.project:
+        return False
+    if f.since_iso and row["started_at"] < f.since_iso:
+        return False
+    if f.role and f.role not in row["role_mix"]:
+        return False
+    if f.tool and f.tool not in (row["tool_names"] or ""):
+        return False
+    return True
 
 
 def search(
@@ -14,21 +29,30 @@ def search(
     query: str,
     *,
     limit: int = 10,
+    filters: Filters | None = None,
     project: str | None = None,
 ) -> list[SearchHit]:
+    if project and (filters is None or filters.project is None):
+        filters = Filters(
+            project=project,
+            since_iso=filters.since_iso if filters else None,
+            role=filters.role if filters else None,
+            tool=filters.tool if filters else None,
+        )
     qvec = embedder.embed([query])[0].tobytes()
-    sql = """
-        SELECT c.id, c.session_id, c.project, c.started_at, c.role_mix, c.text,
-               v.distance AS score
+    rows = conn.execute(
+        """
+        SELECT c.id, c.session_id, c.project, c.started_at, c.role_mix,
+               c.tool_names, c.text, v.distance AS score
         FROM chunks_vec v
         JOIN chunks c ON c.rowid = v.rowid
         WHERE v.embedding MATCH ? AND k = ?
-    """
-    params: list[object] = [qvec, max(limit * 5, 50)]
-    rows = conn.execute(sql, params).fetchall()
-    out = []
+        """,
+        (qvec, max(limit * 5, 50)),
+    ).fetchall()
+    out: list[SearchHit] = []
     for r in rows:
-        if project and r["project"] != project:
+        if not _matches(r, filters):
             continue
         out.append(
             SearchHit(
